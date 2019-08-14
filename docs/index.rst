@@ -23,4 +23,4 @@ If you have any suggestions or questions about **TDAmeritrade API Python Client*
 at jyotibasu@engineeredtrades.com.
 
 If you encounter any errors or problems with **TDAmeritrade API Python Client**, please let me know!
-Open an Issue at the GitHub http://github.com/jbasu/tdam_api main repository.
+Open an Issue at the GitHub https://github.com/jbasu/tdam_api main repository.
