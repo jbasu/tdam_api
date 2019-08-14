@@ -24,18 +24,16 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 lint:
-	flake8 tdam_api test
+	pylama tdam_api tests
 
 test:
-	py.test
+	python -m pytest
 
 test-all:
 	tox
 
 coverage:
-	coverage run --source tdam_api setup.py test
-	coverage report -m
-	coverage html
+	python -m pytest --cov=tdam_api --cov-report=html --cov-branch --cov-config=.coveragerc
 
 docs:
 	rm -f docs/tdam_api.rst

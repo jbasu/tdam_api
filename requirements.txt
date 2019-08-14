@@ -1,2 +1,2 @@
 requests>=2.22.0
-wheel>=0.22
+pandas>=0.25.0
