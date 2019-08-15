@@ -39,6 +39,7 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .coverage
+cov.xml
 .coverage.*
 .cache
 nosetests.xml
@@ -104,4 +105,4 @@ venv.bak/
 .mypy_cache/
 
 # IDEs
-.vscode
+settings.json

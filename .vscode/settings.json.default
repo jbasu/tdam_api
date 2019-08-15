@@ -1,0 +1,32 @@
+{
+    "python.linting.pylintEnabled": false,
+    "python.linting.pylamaEnabled": true,
+    "python.linting.enabled": true,
+    "restructuredtext.confPath": "",
+    "restructuredtext.linter.extraArgs": [
+        "--ignore D002",
+        "--ignore D004"
+    ],
+    "files.exclude": {
+        ".coverage": true,
+        "**/__pycache__": true,
+        "**/.eggs": true,
+        "**/.pytest_cache": true,
+        "**/.tox": true,
+        "**/*.egg-info": true,
+        "build": true,
+        "cov.xml": true,
+        "htmlcov": true,
+    },
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "--cov=.",
+        "--cov-report=xml:cov.xml",
+        "--cov-branch",
+        "-s"
+    ],
+}

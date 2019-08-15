@@ -3,6 +3,7 @@ TDAmeritrade API Python Client
 ==============================
 
 .. image:: https://badge.fury.io/py/tdam_api.png
+..
     :target: https://badge.fury.io/py/tdam_api
 
 .. image:: https://api.travis-ci.org/jbasu/tdam_api.png?branch=master
