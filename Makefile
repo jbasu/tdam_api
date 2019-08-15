@@ -24,7 +24,7 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 lint:
-	pylama tdam_api tests
+	pylama src tests
 
 test:
 	python -m pytest
@@ -33,12 +33,13 @@ test-all:
 	tox
 
 coverage:
-	python -m pytest --cov=tdam_api --cov-report=html --cov-branch --cov-config=.coveragerc
+	coverage run -m pytest
+	coverage html
 
 docs:
 	rm -f docs/tdam_api.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ tdam_api
+	sphinx-apidoc -o docs/ src/tdam_api
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 

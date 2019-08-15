@@ -3,7 +3,7 @@
 import os
 import sys
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 if sys.argv[-1] == "publish":
@@ -25,10 +25,10 @@ setup(
     author="Jyoti Basu",
     author_email="jyotibasu@engineeredtrades.com",
     url="https://github.com/jbasu/tdam_api",
-    packages=["tdam_api"],
+    packages=find_packages("src"),
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
-    package_dir={"tdam_api": "tdam_api"},
+    package_dir={"": "src"},
     include_package_data=True,
     install_requires=[],
     license="MIT",
