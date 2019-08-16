@@ -135,7 +135,11 @@ class TDClient:
         return Fundamental(output[symbol]["fundamental"])
 
     def get_history(
-        self, symbol: str, start_dt: datetime = None, end_dt: datetime = None
+        self,
+        symbol: str,
+        start_dt: datetime = None,
+        end_dt: datetime = None,
+        outside_rth: bool = False,
     ) -> List[Dict[str, float]]:
         if end_dt < start_dt:
             raise InvalidArgument("Start Date should be before End Date")
@@ -144,7 +148,7 @@ class TDClient:
             "periodType": "year",
             "frequencyType": "daily",
             "frequency": 1,
-            "needExtendedHoursData": "false",
+            "needExtendedHoursData": outside_rth,
             "startDate": int(start_dt.timestamp()) * 1000,
             "endDate": int(end_dt.timestamp()) * 1000,
         }
@@ -156,11 +160,17 @@ class TDClient:
         return output["candles"]
 
     def get_history_df(
-        self, symbol: str, start_dt: datetime = None, end_dt: datetime = None
+        self,
+        symbol: str,
+        start_dt: datetime = None,
+        end_dt: datetime = None,
+        outside_rth: bool = False,
     ):
         import pandas as pd
 
-        output = self.get_history(symbol, start_dt=start_dt, end_dt=end_dt)
+        output = self.get_history(
+            symbol, start_dt=start_dt, end_dt=end_dt, outside_rth=outside_rth
+        )
         df = pd.DataFrame(output)
         df["datetime"] = pd.to_datetime(df["datetime"], unit="ms").dt.date
         df.set_index("datetime", inplace=True)
