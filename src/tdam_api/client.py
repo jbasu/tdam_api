@@ -1,7 +1,7 @@
 import os
 import functools
 from typing import List, Dict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
@@ -13,6 +13,7 @@ from .entities import (
     Stock,
     SymbolNotFound,
     InvalidArgument,
+    AuthenticationRequired,
 )
 
 
@@ -22,7 +23,7 @@ def auth_required(f):
         if args[0]._authenticated:
             return f(*args, **kwargs)
         else:
-            raise Exception("Method requires authentication")
+            raise AuthenticationRequired("Method requires authentication")
 
     return wrapper
 
@@ -139,59 +140,37 @@ class TDClient:
         symbol: str,
         start_dt: datetime = None,
         end_dt: datetime = None,
+        freq: str = "d",
         outside_rth: bool = False,
     ) -> List[Dict[str, float]]:
+
+        if start_dt is None or end_dt is None:
+            raise InvalidArgument("Start Date and End Date are required")
         if end_dt < start_dt:
             raise InvalidArgument("Start Date should be before End Date")
+        if freq not in ["d", "w", "m", "1min", "5min", "10min", "15min", "30min"]:
+            raise InvalidArgument(
+                "Frequency should be one of d, w, m, 1min, 5min, 10min, 15min, 30min"
+            )
+        if "min" in freq and datetime.now() - start_dt > timedelta(days=30):
+            raise InvalidArgument(
+                "Start Date cannot be more than 30 calendar days ago for intraday data"
+            )
 
-        params = {
-            "periodType": "year",
-            "frequencyType": "daily",
-            "frequency": 1,
-            "needExtendedHoursData": outside_rth,
-            "startDate": int(start_dt.timestamp()) * 1000,
-            "endDate": int(end_dt.timestamp()) * 1000,
+        config = {
+            "d": ("year", "daily", 1),
+            "w": ("year", "weekly", 1),
+            "m": ("year", "monthly", 1),
+            "1min": ("day", "minute", 1),
+            "5min": ("day", "minute", 5),
+            "10min": ("day", "minute", 10),
+            "15min": ("day", "minute", 15),
+            "30min": ("day", "minute", 30),
         }
-        resp: requests.Response = self._get_with_retry(
-            Urls.history % symbol, params=params
-        )
-        output = resp.json()
-        # TODO Check for the empty case. Wasn't able to simulate it
-        return output["candles"]
-
-    def get_history_df(
-        self,
-        symbol: str,
-        start_dt: datetime = None,
-        end_dt: datetime = None,
-        outside_rth: bool = False,
-    ):
-        import pandas as pd
-
-        output = self.get_history(
-            symbol, start_dt=start_dt, end_dt=end_dt, outside_rth=outside_rth
-        )
-        df = pd.DataFrame(output)
-        df["datetime"] = pd.to_datetime(df["datetime"], unit="ms").dt.date
-        df.set_index("datetime", inplace=True)
-        return df
-
-    def get_intraday_history(
-        self,
-        symbol: str,
-        start_dt: datetime = None,
-        end_dt: datetime = None,
-        frequency: int = 1,
-        outside_rth: bool = False,
-    ):
-        if end_dt < start_dt:
-            raise InvalidArgument("Start Date should be before End Date")
-        if frequency not in [1, 5, 10, 15, 30]:
-            raise InvalidArgument("Frequency not supported. [1, 5, 10, 15, 30]")
-
+        periodType, freqType, frequency = config[freq]
         params = {
-            "periodType": "day",
-            "frequencyType": "minute",
+            "periodType": periodType,
+            "frequencyType": freqType,
             "frequency": frequency,
             "needExtendedHoursData": outside_rth,
             "startDate": int(start_dt.timestamp()) * 1000,
@@ -201,27 +180,30 @@ class TDClient:
             Urls.history % symbol, params=params
         )
         output = resp.json()
-        # TODO Check for the empty case. Wasn't able to simulate it
-        return output["candles"]
 
-    def get_intraday_history_df(
+        if output["empty"]:
+            return None
+        else:
+            return output["candles"]
+
+    def get_history_df(
         self,
         symbol: str,
         start_dt: datetime = None,
         end_dt: datetime = None,
-        frequency: int = 1,
+        freq: str = "d",
         outside_rth: bool = False,
     ):
         import pandas as pd
 
-        output = self.get_intraday_history(
-            symbol,
-            start_dt=start_dt,
-            end_dt=end_dt,
-            frequency=frequency,
-            outside_rth=outside_rth,
+        output = self.get_history(
+            symbol, start_dt=start_dt, end_dt=end_dt, freq=freq, outside_rth=outside_rth
         )
+        if output is None:
+            return None
+
         df = pd.DataFrame(output)
         df["datetime"] = pd.to_datetime(df["datetime"], unit="ms")
+
         df.set_index("datetime", inplace=True)
         return df

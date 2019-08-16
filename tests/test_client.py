@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 import responses
@@ -115,6 +115,17 @@ def test_get_history():
             "AAPL", start_dt=datetime(2019, 1, 31), end_dt=datetime(2019, 1, 1)
         )
 
+    with pytest.raises(InvalidArgument):
+        c.get_history("AAPL")
+
+    with pytest.raises(InvalidArgument):
+        c.get_history(
+            "AAPL",
+            start_dt=datetime(2019, 1, 1),
+            end_dt=datetime(2019, 1, 31),
+            freq="5d",
+        )
+
 
 @pytest.mark.apitest
 def test_quote_unauth():
@@ -181,6 +192,11 @@ def test_get_history_unauth():
     for k in keys:
         assert k in res[0].keys()
 
+    res = c.get_history(
+        "No Dice", start_dt=datetime(2019, 1, 1), end_dt=datetime(2019, 1, 31)
+    )
+    assert res is None
+
 
 @pytest.mark.apitest
 def test_get_history_df_unauth():
@@ -196,3 +212,35 @@ def test_get_history_df_unauth():
     keys = ["open", "high", "low", "close", "volume"]
     for k in res.columns:
         assert k in keys
+
+    res = c.get_history_df(
+        "No Dice", start_dt=datetime(2019, 1, 1), end_dt=datetime(2019, 1, 31)
+    )
+    assert res is None
+
+
+@pytest.mark.apitest
+def test_get_intraday_history_df_unauth():
+    import pandas as pd
+
+    c = TDClient(authenticated=False)
+    res = c.get_history_df(
+        "AAPL",
+        start_dt=datetime.today() - timedelta(4),
+        end_dt=datetime.today(),
+        freq="30min",
+    )
+    assert isinstance(res, pd.DataFrame)
+    assert res.shape[1] == 5
+    assert res.index.name == "datetime"
+    keys = ["open", "high", "low", "close", "volume"]
+    for k in res.columns:
+        assert k in keys
+
+    with pytest.raises(InvalidArgument):
+        res = c.get_history_df(
+            "AAPL",
+            start_dt=datetime.today() - timedelta(60),
+            end_dt=datetime.today() - timedelta(55),
+            freq="30min",
+        )

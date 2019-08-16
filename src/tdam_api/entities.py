@@ -52,3 +52,7 @@ class SymbolNotFound(ValueError):
 
 class InvalidArgument(ValueError):
     pass
+
+
+class AuthenticationRequired(Exception):
+    pass
