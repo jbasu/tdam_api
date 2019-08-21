@@ -128,6 +128,7 @@ class TDClient:
         params = {"symbol": symbol_pattern, "projection": "symbol-regex"}
         resp: requests.Response = self._get_with_retry(Urls.search, params=params)
         output = resp.json()
+        print(output)
         output = {k: Instrument(v) for k, v in output.items()}
         return output
 
