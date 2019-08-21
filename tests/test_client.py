@@ -160,10 +160,9 @@ def test_quotes_unauth():
 @pytest.mark.apitest
 def test_find_instrument_unauth():
     c = TDClient(authenticated=False)
-    res = c.find_instrument("LYF.*")
-    # Expecting LYFE and LYFT
-    assert len(res.keys()) == 2
-    assert "LYFE" in res.keys()
+    res = c.find_instrument("LYFT.*")
+    # Expecting LYFT
+    assert len(res.keys()) == 1
     assert "LYFT" in res.keys()
     assert isinstance(res["LYFT"], Instrument)
     assert res["LYFT"].symbol == "LYFT"
