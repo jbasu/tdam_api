@@ -11,6 +11,8 @@ from .entities import (
     Instrument,
     Fundamental,
     Stock,
+    Option,
+    OptionChain,
     SymbolNotFound,
     InvalidArgument,
     AuthenticationRequired,
@@ -144,6 +146,7 @@ class TDClient:
         outside_rth: bool = False,
     ) -> List[Dict[str, float]]:
 
+        # TODO Check if date is UTC, if non-tzaware convert appropriately
         if start_dt is None or end_dt is None:
             raise InvalidArgument("Start Date and End Date are required")
         if end_dt < start_dt:
@@ -207,3 +210,77 @@ class TDClient:
 
         df.set_index("datetime", inplace=True)
         return df
+
+    def get_expirations(self, symbol: str = None) -> List[str]:
+        params = {
+            "symbol": symbol,
+            "contractType": "CALL",
+            "strategy": "SINGLE",
+            "range": "NTM",
+        }
+        resp: requests.Response = self._get_with_retry(Urls.option_chain, params=params)
+        output = resp.json()
+        expiries = []
+        for v in output["callExpDateMap"].keys():
+            d, n = v.split(":")
+            expiries.append(d)
+
+        return expiries
+
+    def get_option_chain(self, symbol: str = None, expiry: str = None) -> OptionChain:
+        if symbol is None or expiry is None:
+            raise InvalidArgument("symbol and expiry (yyyy-mm-dd) are required")
+
+        params = {
+            "symbol": symbol,
+            "strategy": "SINGLE",
+            "fromDate": expiry,
+            "toDate": expiry,
+        }
+        resp: requests.Response = self._get_with_retry(Urls.option_chain, params=params)
+        output = resp.json()
+        calls: Dict[str, Option] = {}
+        puts: Dict[str, Option] = {}
+        for exp, options in output["callExpDateMap"].items():
+            if expiry in exp:
+                for s in options.keys():
+                    calls[s] = Option(options[s][0])
+        for exp, options in output["putExpDateMap"].items():
+            if expiry in exp:
+                for s in options.keys():
+                    puts[s] = Option(options[s][0])
+        chain = OptionChain(calls, puts)
+        return chain
+
+    def get_option(
+        self,
+        symbol: str = None,
+        expiry: str = None,
+        right: str = None,
+        strike: float = None,
+    ) -> Option:
+        if right.lower() in ["c", "call"]:
+            right = "CALL"
+        if right.lower() in ["p", "put"]:
+            right = "PUT"
+
+        ctype_map = {"CALL": "callExpDateMap", "PUT": "putExpDateMap"}
+        params = {
+            "symbol": symbol,
+            "strategy": "SINGLE",
+            "fromDate": expiry,
+            "toDate": expiry,
+            "strike": strike,
+            "contractType": right,
+        }
+        resp: requests.Response = self._get_with_retry(Urls.option_chain, params=params)
+        output = resp.json()
+        data = output[ctype_map[right]]
+        if not data:
+            raise SymbolNotFound("Option Not Found")
+
+        out = None
+        for e in data.keys():
+            if expiry in e:
+                out = Option(data[e][Option.float_to_strike(strike)][0])
+                return out
