@@ -107,7 +107,7 @@ class TDClient:
         resp.raise_for_status()
 
     def quotes(self, symbols: List[str]) -> Dict[str, Quote]:
-        params = {"symbol": ",".join(symbols)}
+        params = {"symbol": (",".join(symbols)).upper()}
         resp: requests.Response = self._get_with_retry(Urls.quote, params=params)
         output = resp.json()
         output = {k: Quote(v) for k, v in output.items()}
@@ -117,12 +117,13 @@ class TDClient:
             raise SymbolNotFound(f"{','.join(symbols)} not found")
 
     def quote(self, symbol: str) -> Quote:
+        symbol = symbol.upper()
         output = self.quotes([symbol])
         return output[symbol]
 
     def stock(self, symbol: str) -> Stock:
         output = self.quote(symbol)
-        return Stock(output._get_data)
+        return Stock(output._get_data())
 
     def find_instrument(self, symbol_pattern: str) -> Dict[str, Instrument]:
         params = {"symbol": symbol_pattern, "projection": "symbol-regex"}
@@ -132,6 +133,7 @@ class TDClient:
         return output
 
     def get_fundamentals(self, symbol: str) -> Fundamental:
+        symbol = symbol.upper()
         params = {"symbol": symbol, "projection": "fundamental"}
         resp: requests.Response = self._get_with_retry(Urls.search, params=params)
         output = resp.json()
@@ -146,6 +148,7 @@ class TDClient:
         outside_rth: bool = False,
     ) -> List[Dict[str, float]]:
 
+        symbol = symbol.upper()
         # TODO Check if date is UTC, if non-tzaware convert appropriately
         if start_dt is None or end_dt is None:
             raise InvalidArgument("Start Date and End Date are required")
@@ -212,6 +215,7 @@ class TDClient:
         return df
 
     def get_expirations(self, symbol: str = None) -> List[str]:
+        symbol = symbol.upper()
         params = {
             "symbol": symbol,
             "contractType": "CALL",
@@ -230,6 +234,7 @@ class TDClient:
     def get_option_chain(self, symbol: str = None, expiry: str = None) -> OptionChain:
         if symbol is None or expiry is None:
             raise InvalidArgument("symbol and expiry (yyyy-mm-dd) are required")
+        symbol = symbol.upper()
 
         params = {
             "symbol": symbol,
@@ -259,6 +264,7 @@ class TDClient:
         right: str = None,
         strike: float = None,
     ) -> Option:
+        symbol = symbol.upper()
         if right.lower() in ["c", "call"]:
             right = "CALL"
         if right.lower() in ["p", "put"]:

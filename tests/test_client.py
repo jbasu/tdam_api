@@ -9,6 +9,7 @@ from tdam_api import TDClient
 from tdam_api.entities import (
     SymbolNotFound,
     Quote,
+    Stock,
     Instrument,
     Fundamental,
     InvalidArgument,
@@ -37,7 +38,6 @@ def fundamental_resp(symbol: str):
 
 
 def validate_quote_response(res: Quote, symbol: str):
-    assert isinstance(res, Quote)
     assert res.bidPrice is not None
     assert res.symbol == symbol
     assert res.exchangeName == "NASD"
@@ -57,9 +57,13 @@ def test_quote():
     res = c.quote(sym)
     assert res.symbol == sym
 
+    # Test the automatic upper casing
+    res = c.quote("fb")
+    assert res.symbol == sym
+
     responses.add(
         responses.GET,
-        Urls.quote + f"?apikey={apikey}&symbol=No Dice",
+        Urls.quote + f"?apikey={apikey}&symbol=NO DICE",
         json={},
         status=200,
     )
@@ -70,7 +74,8 @@ def test_quote():
 @responses.activate
 def test_find_instrument():
     c = TDClient(authenticated=False)
-    sym = "LYF.*"
+    # TD API accepts lowercase for the search endpoint
+    sym = "lyf.*"
 
     responses.add(
         responses.GET,
@@ -94,7 +99,7 @@ def test_get_fundamentals():
         json=fundamental_resp(sym),
         status=200,
     )
-    res = c.get_fundamentals(sym)
+    res = c.get_fundamentals(sym.lower())
     assert isinstance(res, Fundamental)
     assert res.symbol == sym
     assert res.peRatio == 18.15
@@ -103,24 +108,24 @@ def test_get_fundamentals():
 def test_stock():
     c = TDClient(authenticated=False)
     with mock.patch.object(TDClient, "quote") as m:
-        c.stock("FB")
+        c.stock("fb")
         m.assert_called_once()
-        m.assert_called_with("FB")
+        m.assert_called_with("fb")
 
 
 def test_get_history():
     c = TDClient(authenticated=False)
     with pytest.raises(InvalidArgument):
         c.get_history(
-            "AAPL", start_dt=datetime(2019, 1, 31), end_dt=datetime(2019, 1, 1)
+            "aapl", start_dt=datetime(2019, 1, 31), end_dt=datetime(2019, 1, 1)
         )
 
     with pytest.raises(InvalidArgument):
-        c.get_history("AAPL")
+        c.get_history("aapl")
 
     with pytest.raises(InvalidArgument):
         c.get_history(
-            "AAPL",
+            "aapl",
             start_dt=datetime(2019, 1, 1),
             end_dt=datetime(2019, 1, 31),
             freq="5d",
@@ -136,7 +141,12 @@ def test_quote_unauth():
         c.quote("No Dice")
 
     # Test valid case
-    res = c.quote("FB")
+    res = c.quote("fb")
+    assert isinstance(res, Quote)
+    validate_quote_response(res, "FB")
+
+    res = c.stock("fb")
+    assert isinstance(res, Stock)
     validate_quote_response(res, "FB")
 
 
@@ -149,7 +159,7 @@ def test_quotes_unauth():
         c.quotes(["No Dice", "None Here Too"])
 
     # Test valid case
-    res = c.quotes(["FB", "MSFT"])
+    res = c.quotes(["fb", "msft"])
     assert len(res.keys()) == 2
     assert "FB" in res.keys()
     assert "MSFT" in res.keys()
@@ -160,7 +170,7 @@ def test_quotes_unauth():
 @pytest.mark.apitest
 def test_find_instrument_unauth():
     c = TDClient(authenticated=False)
-    res = c.find_instrument("LYFT.*")
+    res = c.find_instrument("lyft.*")
     # Expecting LYFT
     assert len(res.keys()) == 1
     assert "LYFT" in res.keys()
@@ -172,7 +182,7 @@ def test_find_instrument_unauth():
 @pytest.mark.apitest
 def test_get_fundamentals_unauth():
     c = TDClient(authenticated=False)
-    res = c.get_fundamentals("AAPL")
+    res = c.get_fundamentals("aapl")
     assert isinstance(res, Fundamental)
     assert res.symbol == "AAPL"
     assert res.peRatio is not None
@@ -183,7 +193,7 @@ def test_get_fundamentals_unauth():
 def test_get_history_unauth():
     c = TDClient(authenticated=False)
     res = c.get_history(
-        "AAPL", start_dt=datetime(2019, 1, 1), end_dt=datetime(2019, 1, 31)
+        "aapl", start_dt=datetime(2019, 1, 1), end_dt=datetime(2019, 1, 31)
     )
     assert len(res) == 21
     assert len(res[0].keys()) == 6
@@ -203,7 +213,7 @@ def test_get_history_df_unauth():
 
     c = TDClient(authenticated=False)
     res = c.get_history_df(
-        "AAPL", start_dt=datetime(2019, 1, 1), end_dt=datetime(2019, 1, 31)
+        "aapl", start_dt=datetime(2019, 1, 1), end_dt=datetime(2019, 1, 31)
     )
     assert isinstance(res, pd.DataFrame)
     assert res.shape == (21, 5)
@@ -224,7 +234,7 @@ def test_get_intraday_history_df_unauth():
 
     c = TDClient(authenticated=False)
     res = c.get_history_df(
-        "AAPL",
+        "aapl",
         start_dt=datetime.today() - timedelta(4),
         end_dt=datetime.today(),
         freq="30min",
