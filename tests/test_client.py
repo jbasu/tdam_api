@@ -131,6 +131,13 @@ def test_get_history():
             freq="5d",
         )
 
+    # Ensure that we don't need to pass a end_dt (defaults to datetime.today())
+    with mock.patch.object(TDClient, "_get_with_retry") as m:
+        m.return_value.json.return_value = {"empty": False, "candles": ["1", "2"]}
+        out = c.get_history("aapl", start_dt=datetime(2019, 1, 1))
+        m.assert_called_once()
+        assert out == ["1", "2"]
+
 
 @pytest.mark.apitest
 def test_quote_unauth():

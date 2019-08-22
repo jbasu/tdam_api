@@ -143,7 +143,7 @@ class TDClient:
         self,
         symbol: str,
         start_dt: datetime = None,
-        end_dt: datetime = None,
+        end_dt: datetime = datetime.today(),
         freq: str = "d",
         outside_rth: bool = False,
     ) -> List[Dict[str, float]]:
@@ -196,7 +196,7 @@ class TDClient:
         self,
         symbol: str,
         start_dt: datetime = None,
-        end_dt: datetime = None,
+        end_dt: datetime = datetime.today(),
         freq: str = "d",
         outside_rth: bool = False,
     ):
