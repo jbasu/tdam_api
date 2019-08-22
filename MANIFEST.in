@@ -1,12 +1,12 @@
 graft docs
 graft src
-graft ci
-graft tests
+prune ci
+prune tests
 
-include .bumpversion.cfg
-include .coveragerc
-include .cookiecutterrc
-include .editorconfig
+exclude .bumpversion.cfg
+exclude .coveragerc
+exclude .cookiecutterrc
+exclude .editorconfig
 
 include AUTHORS.rst
 include CHANGELOG.rst
@@ -14,6 +14,6 @@ include CONTRIBUTING.rst
 include LICENSE
 include README.rst
 
-include tox.ini .travis.yml
+exclude tox.ini .travis.yml
 
 global-exclude *.py[cod] __pycache__ *.so *.dylib
