@@ -3,45 +3,26 @@ Contributing
 ============
 
 Contributions are welcome, and they are greatly appreciated! Every
-little bit helps, and credit will always be given. 
+little bit helps, and credit will always be given.
 
-You can contribute in many ways:
+Bug reports
+===========
 
-Types of Contributions
-----------------------
+When `reporting a bug <https://github.com/jbasu/tdam_api/issues>`_ please include:
 
-Report Bugs
-~~~~~~~~~~~
+    * Your operating system name and version.
+    * Any details about your local setup that might be helpful in troubleshooting.
+    * Detailed steps to reproduce the bug.
 
-Report bugs at https://github.com/jbasu/tdam_api/issues.
+Documentation improvements
+==========================
 
-If you are reporting a bug, please include:
+TD Ameritrade API Python Client could always use more documentation, whether as part of the
+official TD Ameritrade API Python Client docs, in docstrings, or even on the web in blog posts,
+articles, and such.
 
-* Your operating system name and version.
-* Any details about your local setup that might be helpful in troubleshooting.
-* Detailed steps to reproduce the bug.
-
-Fix Bugs
-~~~~~~~~
-
-Look through the GitHub issues for bugs. Anything tagged with "bug"
-is open to whoever wants to implement it.
-
-Implement Features
-~~~~~~~~~~~~~~~~~~
-
-Look through the GitHub issues for features. Anything tagged with "feature"
-is open to whoever wants to implement it.
-
-Write Documentation
-~~~~~~~~~~~~~~~~~~~
-
-TDAmeritrade API Python Client could always use more documentation, whether as
-part of the official TDAmeritrade API Python Client docs, in docstrings, 
-or even on the web in blog posts, articles, and such.
-
-Submit Feedback
-~~~~~~~~~~~~~~~
+Feature requests and feedback
+=============================
 
 The best way to send feedback is to file an issue at https://github.com/jbasu/tdam_api/issues.
 
@@ -49,61 +30,61 @@ If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+* Remember that this is a volunteer-driven project, and that code contributions are welcome :)
 
-Get Started!
-------------
+Development
+===========
 
-Ready to contribute? Here's how to set up `tdam_api` for
-local development.
+To set up `tdam_api` for local development:
 
-1. Fork_ the `tdam_api` repo on GitHub.
+1. Fork `tdam_api <https://github.com/jbasu/tdam_api>`_
+   (look for the "Fork" button).
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/tdam_api.git
+    git clone git@github.com:jbasu/tdam_api.git
 
 3. Create a branch for local development::
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+    git checkout -b name-of-your-bugfix-or-feature
 
-Now you can make your changes locally.
+   Now you can make your changes locally.
 
-4. When you're done making changes, check that your changes pass style and
-    unit tests, including testing other Python versions with tox::
+4. When you're done making changes, run all the checks, doc builder and spell checker with `tox <http://tox.readthedocs.io/en/latest/install.html>`_ one command::
 
-    $ tox
-
-To get tox, just pip install it.
+    tox
 
 5. Commit your changes and push your branch to GitHub::
 
-    $ git add .
-    $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
+    git add .
+    git commit -m "Your detailed description of your changes."
+    git push origin name-of-your-bugfix-or-feature
 
 6. Submit a pull request through the GitHub website.
-
-.. _Fork: https://github.com/jbasu/tdam_api/fork
 
 Pull Request Guidelines
 -----------------------
 
-Before you submit a pull request, check that it meets these guidelines:
+If you need some code review or feedback while you're developing the code just make the pull request.
 
-1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, and 3.3, and for PyPy.
-   Check https://travis-ci.org/jbasu/tdam_api 
-   under pull requests for active pull requests or run the ``tox`` command and
-   make sure that the tests pass for all supported Python versions.
+For merging, you should:
 
+1. Include passing tests (run ``tox``) [1]_.
+2. Update documentation when there's new API, functionality etc.
+3. Add a note to ``CHANGELOG.rst`` about the changes.
+4. Add yourself to ``AUTHORS.rst``.
+
+.. [1] If you don't have all the necessary python versions available locally you can rely on Travis - it will
+       `run the tests <https://travis-ci.org/jbasu/tdam_api/pull_requests>`_ for each change you add in the pull request.
+
+       It will be slower though ...
 
 Tips
 ----
 
 To run a subset of tests::
 
-    $ py.test test/test_tdam_api.py
+    tox -e envname -- pytest -k test_myfeature
+
+To run all the test environments in *parallel* (you need to ``pip install detox``)::
+
+    detox

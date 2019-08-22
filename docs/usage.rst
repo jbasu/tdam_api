@@ -1,7 +1,7 @@
-========
+=====
 Usage
-========
+=====
 
-To use TDAmeritrade API Python Client in a project::
+To use TD Ameritrade API Python Client in a project::
 
 	import tdam_api

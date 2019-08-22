@@ -1,11 +1,8 @@
-=======
-Credits
+
+Authors
 =======
 
-Development Lead
-----------------
-
-* Jyoti Basu <jyotibasu@engineeredtrades.com>
+* Jyoti Basu - <jyotibasu@engineeredtrades.com>
 
 Contributors
 ------------
